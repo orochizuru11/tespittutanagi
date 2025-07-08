@@ -2,51 +2,82 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Word Kaydet Test</title>
+  <title>Word Kaydet Testi</title>
 
   <!-- TinyMCE -->
   <script src="https://cdn.tiny.cloud/1/pds3kn2z4g058iovio38007sirlqb4vjpxxgiul81ua5o8vv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
-  <!-- html-docx-js ve FileSaver -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js"></script>
+  <!-- DOCX kaydetme kütüphaneleri -->
+  <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://unpkg.com/html-docx-js@0.4.1/dist/html-docx.min.js"></script>
 
   <style>
-    body { padding: 2rem; font-family: sans-serif; background: #eee; }
-    .editor-container { background: white; padding: 2rem; box-shadow: 0 0 10px rgba(0,0,0,0.2); width: 21cm; min-height: 29.7cm; margin: auto; }
-    button { padding: 10px 20px; font-weight: bold; margin: 10px 0; }
+    body {
+      background: #f0f0f0;
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      width: 21cm;
+      min-height: 29.7cm;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-weight: bold;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
   </style>
 </head>
 <body>
 
-  <button onclick="saveAsDocx()">💾 Word olarak kaydet (.docx)</button>
+<button onclick="saveAsDocx()">💾 Word Olarak Kaydet (.docx)</button>
 
-  <div class="editor-container">
-    <textarea id="editor">Buraya bir şeyler yaz veya Word'den kopyala.</textarea>
-  </div>
+<div class="container">
+  <textarea id="editor">
+    <h1>Merhaba!</h1>
+    <p>Bu içerik docx dosyasına kaydedilecek.</p>
+    <ul>
+      <li>Madde 1</li>
+      <li>Madde 2</li>
+    </ul>
+  </textarea>
+</div>
 
 <script>
   tinymce.init({
     selector: '#editor',
     height: 800,
-    plugins: 'table code lists image',
+    plugins: 'lists table image code',
     toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | table | code',
-    setup: function (editor) {
-      console.log("Editor hazır");
-    }
   });
 
   function saveAsDocx() {
     const content = tinymce.get("editor").getContent();
-    const fullHtml = `
+
+    // Word uyumlu HTML yapısı
+    const html = `
       <!DOCTYPE html>
       <html>
         <head><meta charset="utf-8"></head>
         <body>${content}</body>
       </html>
     `;
-    const converted = htmlDocx.asBlob(fullHtml);
-    saveAs(converted, 'belge.docx');
+
+    // DOCX dosyası üret
+    const blob = window.htmlDocx.asBlob(html);
+    window.saveAs(blob, 'belge.docx');
   }
 </script>
 
