@@ -2,155 +2,51 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Word Benzeri Editör</title>
+  <title>Word Kaydet Test</title>
 
   <!-- TinyMCE -->
   <script src="https://cdn.tiny.cloud/1/pds3kn2z4g058iovio38007sirlqb4vjpxxgiul81ua5o8vv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
-  <!-- DOCX için -->
+  <!-- html-docx-js ve FileSaver -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js"></script>
 
   <style>
-    body {
-      background: #d1d1d1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .toolbar {
-      margin-bottom: 10px;
-    }
-
-    .word-page {
-      width: 21cm;
-      min-height: 29.7cm;
-      padding: 2cm;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
-
-    button {
-      padding: 8px 16px;
-      margin: 0 5px;
-      border: none;
-      border-radius: 4px;
-      background: #007bff;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
+    body { padding: 2rem; font-family: sans-serif; background: #eee; }
+    .editor-container { background: white; padding: 2rem; box-shadow: 0 0 10px rgba(0,0,0,0.2); width: 21cm; min-height: 29.7cm; margin: auto; }
+    button { padding: 10px 20px; font-weight: bold; margin: 10px 0; }
   </style>
 </head>
 <body>
 
-<!-- Üst menü -->
-<div class="toolbar">
   <button onclick="saveAsDocx()">💾 Word olarak kaydet (.docx)</button>
-  <button onclick="window.print()">🖨️ Yazdır</button>
-  <input type="file" id="uploadFile" accept=".doc,.docx,.html,.txt" onchange="handleFile(event)">
-</div>
 
-<!-- Sayfa alanı -->
-<div class="word-page">
-  <textarea id="editor">
-    Buraya tablo, yazı ve checkbox ekleyebilir, hizalamaları araç çubuğundan değiştirebilirsin.
-  </textarea>
-</div>
+  <div class="editor-container">
+    <textarea id="editor">Buraya bir şeyler yaz veya Word'den kopyala.</textarea>
+  </div>
 
 <script>
   tinymce.init({
     selector: '#editor',
-    height: 1000,
-    menubar: true,
-    plugins: [
-      'image', 'table', 'lists', 'paste', 'code'
-    ],
-    toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | insertCheckbox | table image | verticalAlignMenu | code',
-    paste_data_images: true,
-    content_style: `
-      body {
-        font-family: "Times New Roman", serif;
-        font-size: 12pt;
-        line-height: 1.5;
-      }
-      table, th, td {
-        border: 1px solid #000;
-        border-collapse: collapse;
-      }
-    `,
+    height: 800,
+    plugins: 'table code lists image',
+    toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | table | code',
     setup: function (editor) {
-      // ✅ Checkbox butonu
-      editor.ui.registry.addButton('insertCheckbox', {
-        text: '☑ Kutucuk',
-        tooltip: 'Tıklanabilir kutu ekle',
-        onAction: function () {
-          editor.insertContent('<input type="checkbox"> ');
-        }
-      });
-
-      // ✅ Dikey hizalama menüsü
-      editor.ui.registry.addMenuButton('verticalAlignMenu', {
-        text: 'Dikey Hizala',
-        fetch: function (callback) {
-          callback([
-            {
-              type: 'menuitem',
-              text: 'Üst Hizala',
-              onAction: function () {
-                editor.execCommand('mceTableApplyCellStyle', false, { 'vertical-align': 'top' });
-              }
-            },
-            {
-              type: 'menuitem',
-              text: 'Ortala',
-              onAction: function () {
-                editor.execCommand('mceTableApplyCellStyle', false, { 'vertical-align': 'middle' });
-              }
-            },
-            {
-              type: 'menuitem',
-              text: 'Alt Hizala',
-              onAction: function () {
-                editor.execCommand('mceTableApplyCellStyle', false, { 'vertical-align': 'bottom' });
-              }
-            }
-          ]);
-        }
-      });
+      console.log("Editor hazır");
     }
   });
 
-  // ✅ Word olarak kaydet (.docx)
   function saveAsDocx() {
     const content = tinymce.get("editor").getContent();
-    const converted = htmlDocx.asBlob(`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${content}</body></html>`);
+    const fullHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head><meta charset="utf-8"></head>
+        <body>${content}</body>
+      </html>
+    `;
+    const converted = htmlDocx.asBlob(fullHtml);
     saveAs(converted, 'belge.docx');
-  }
-
-  // ✅ Dosya yükleme
-  function handleFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const extension = file.name.split('.').pop().toLowerCase();
-      if (extension === "html" || extension === "txt") {
-        tinymce.get("editor").setContent(e.target.result);
-      } else if (extension === "doc" || extension === "docx") {
-        alert("Word dosyaları doğrudan yüklenemez, lütfen kopyala–yapıştır yapın.");
-      } else {
-        alert("Desteklenmeyen dosya türü.");
-      }
-    };
-    reader.readAsText(file);
   }
 </script>
 
