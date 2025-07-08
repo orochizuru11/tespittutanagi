@@ -1,117 +1,99 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<title>CKEditor5 + DOCX ZIP İndir (jsDelivr ile)</title>
+  <meta charset="UTF-8" />
+  <title>Word Kaydet Testi (TinyMCE + Zip içinde docx)</title>
 
-<!-- CKEditor 5 Classic -->
-<script src="https://cdn.ckeditor.com/ckeditor5/38.1.1/classic/ckeditor.js"></script>
+  <!-- TinyMCE -->
+  <script src="https://cdn.tiny.cloud/1/pds3kn2z4g058iovio38007sirlqb4vjpxxgiul81ua5o8vv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
-<!-- html-docx-js jsDelivr CDN -->
-<script src="https://cdn.jsdelivr.net/gh/evidenceprime/html-docx-js@master/dist/html-docx.min.js"></script>
+  <!-- DOCX kaydetme kütüphaneleri (jsDelivr) -->
+  <script src="https://cdn.jsdelivr.net/gh/evidenceprime/html-docx-js@master/dist/html-docx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-<!-- Diğer kütüphaneler -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    padding: 1rem 2rem;
-    background: #f5f5f5;
-  }
-  #editor {
-    min-height: 400px;
-    background: white;
-    padding: 1rem;
-    box-shadow: 0 0 8px rgba(0,0,0,0.15);
-    margin-bottom: 1rem;
-  }
-  button {
-    background-color: #007bff;
-    border: none;
-    color: white;
-    font-weight: bold;
-    padding: 12px 30px;
-    font-size: 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
-</style>
+  <style>
+    body {
+      background: #f0f0f0;
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      width: 21cm;
+      min-height: 29.7cm;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-weight: bold;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
 
-<h1>CKEditor 5 ile Word Dosyasını ZIP İçinde İndir</h1>
+<button onclick="saveAsDocx()">💾 Word Olarak Kaydet ZIP İçinde (.docx)</button>
 
-<div id="editor">
-  <h2>Başlık</h2>
-  <p>Buraya metin yazabilir ya da yapıştırabilirsiniz.</p>
+<div class="container">
+  <textarea id="editor">
+    <h1>Merhaba!</h1>
+    <p>Bu içerik docx dosyasına kaydedilecek.</p>
+    <ul>
+      <li>Madde 1</li>
+      <li>Madde 2</li>
+    </ul>
+  </textarea>
 </div>
 
-<button id="btnSave">💾 Word (.docx) ZIP Olarak İndir</button>
-
 <script>
-  let editorInstance;
+  tinymce.init({
+    selector: '#editor',
+    height: 800,
+    plugins: 'lists table image code',
+    toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | table | code',
+  });
 
-  ClassicEditor
-    .create(document.querySelector('#editor'), {
-      toolbar: [
-        'heading', '|',
-        'bold', 'italic', 'underline', 'strikethrough', '|',
-        'bulletedList', 'numberedList', 'todoList', '|',
-        'link', 'blockQuote', 'insertTable', 'undo', 'redo'
-      ],
-      table: {
-        contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-      }
-    })
-    .then(editor => {
-      editorInstance = editor;
-      console.log('CKEditor yüklendi.');
-    })
-    .catch(error => {
-      console.error('CKEditor yüklenirken hata:', error);
-      alert('Editör yüklenirken hata oluştu. Konsolu kontrol et.');
-    });
+  async function saveAsDocx() {
+    const content = tinymce.get("editor").getContent();
 
-  document.getElementById('btnSave').addEventListener('click', async () => {
-    if (!editorInstance) {
-      alert('Editör henüz yüklenmedi!');
-      return;
-    }
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head><meta charset="utf-8"></head>
+        <body>${content}</body>
+      </html>
+    `;
 
-    if (typeof window.htmlDocx === 'undefined') {
+    if(typeof window.htmlDocx === 'undefined') {
       alert('html-docx-js kütüphanesi yüklenmedi!');
       return;
     }
 
     try {
-      const content = editorInstance.getData();
-
-      const fullHtml = `
-        <!DOCTYPE html>
-        <html>
-          <head><meta charset="utf-8"></head>
-          <body>${content}</body>
-        </html>
-      `;
-
-      const docxBlob = window.htmlDocx.asBlob(fullHtml);
+      const docxBlob = window.htmlDocx.asBlob(html);
 
       const zip = new JSZip();
       zip.file('belge.docx', docxBlob);
 
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-
       saveAs(zipBlob, 'belge.zip');
     } catch (e) {
-      console.error('Dosya oluşturulurken hata:', e);
       alert('Dosya oluşturulurken hata oluştu. Konsolu kontrol edin.');
+      console.error(e);
     }
-  });
+  }
 </script>
 
 </body>
