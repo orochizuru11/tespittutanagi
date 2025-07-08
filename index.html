@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Benzeri Editör</title>
+  <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+  <style>
+    body {
+      background: #d1d1d1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .toolbar {
+      margin-bottom: 10px;
+    }
+
+    .word-page {
+      width: 21cm;
+      min-height: 29.7cm;
+      padding: 2cm;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    button {
+      padding: 8px 16px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button onclick="saveContent()">💾 Kaydet</button>
+  <button onclick="window.print()">🖨️ Yazdır</button>
+  <input type="file" id="uploadFile" accept=".doc,.docx,.html,.txt" onchange="handleFile(event)">
+</div>
+
+<div class="word-page">
+  <textarea id="editor">Buraya Word veya başka bir belgeden kopyala–yapıştır yapabilir veya yukarıdan dosya yükleyebilirsin.</textarea>
+</div>
+
+<script>
+  tinymce.init({
+    selector: '#editor',
+    height: 1000,
+    menubar: true,
+    plugins: [
+      'image', 'table', 'lists', 'paste', 'code'
+    ],
+    toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | table image | code',
+    paste_data_images: true,
+    content_style: `
+      body {
+        font-family: "Times New Roman", serif;
+        font-size: 12pt;
+        line-height: 1.5;
+      }
+      table, th, td {
+        border: 1px solid #000;
+        border-collapse: collapse;
+      }
+    `
+  });
+
+  function saveContent() {
+    const content = tinymce.get("editor").getContent();
+    const blob = new Blob([content], { type: "text/html;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "belge.html";
+    link.click();
+  }
+
+  function handleFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const extension = file.name.split('.').pop().toLowerCase();
+      if (extension === "html" || extension === "txt") {
+        tinymce.get("editor").setContent(e.target.result);
+      } else if (extension === "doc" || extension === "docx") {
+        alert("Word dosyaları doğrudan yüklenemez, lütfen Word'den kopyala-yapıştır yapın.");
+      } else {
+        alert("Desteklenmeyen dosya türü.");
+      }
+    };
+    reader.readAsText(file);
+  }
+</script>
+
+</body>
+</html>
