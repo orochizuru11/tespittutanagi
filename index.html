@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Word Benzeri Editör</title>
-  <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+  <!-- ✅ TinyMCE API Key'li sürüm -->
+  <script src="https://cdn.tiny.cloud/1/pds3kn2z4g058iovio38007sirlqb4vjpxxgiul81ua5o8vv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
   <style>
     body {
       background: #d1d1d1;
@@ -43,14 +46,16 @@
 </head>
 <body>
 
+<!-- ✅ Üst araç çubuğu -->
 <div class="toolbar">
   <button onclick="saveContent()">💾 Kaydet</button>
   <button onclick="window.print()">🖨️ Yazdır</button>
   <input type="file" id="uploadFile" accept=".doc,.docx,.html,.txt" onchange="handleFile(event)">
 </div>
 
+<!-- ✅ Düzenlenebilir sayfa -->
 <div class="word-page">
-  <textarea id="editor">Buraya Word veya başka bir belgeden kopyala–yapıştır yapabilir veya yukarıdan dosya yükleyebilirsin.</textarea>
+  <textarea id="editor">Buraya Word belgesinden kopyala–yapıştır yapabilir veya dosya yükleyebilirsin.</textarea>
 </div>
 
 <script>
@@ -76,6 +81,7 @@
     `
   });
 
+  // ✅ HTML içeriği kaydet
   function saveContent() {
     const content = tinymce.get("editor").getContent();
     const blob = new Blob([content], { type: "text/html;charset=utf-8" });
@@ -85,6 +91,7 @@
     link.click();
   }
 
+  // ✅ Dosya yükle
   function handleFile(event) {
     const file = event.target.files[0];
     if (!file) return;
