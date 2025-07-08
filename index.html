@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>ZIP İçinde Word Kaydet</title>
+  <meta charset="UTF-8" />
+  <title>CKEditor 5 ile Word (.docx) ZIP Olarak İndir</title>
 
-  <!-- TinyMCE -->
-  <script src="https://cdn.tiny.cloud/1/pds3kn2z4g058iovio38007sirlqb4vjpxxgiul81ua5o8vv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+  <!-- CKEditor 5 Classic build -->
+  <script src="https://cdn.ckeditor.com/ckeditor5/38.1.1/classic/ckeditor.js"></script>
 
   <!-- Gerekli kütüphaneler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js"></script>
@@ -13,51 +13,90 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <style>
-    body { background: #eee; padding: 20px; font-family: sans-serif; }
-    .container { background: white; padding: 2rem; width: 21cm; min-height: 29.7cm; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
-    button { padding: 10px 20px; margin: 20px auto; display: block; font-weight: bold; background: #007bff; color: white; border: none; border-radius: 5px; }
-    button:hover { background: #0056b3; }
+    body {
+      background: #f7f7f7;
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }
+    #editor {
+      min-height: 400px;
+      background: white;
+      padding: 1rem;
+      box-shadow: 0 0 8px rgba(0,0,0,0.15);
+    }
+    button {
+      margin-top: 1rem;
+      padding: 12px 24px;
+      font-weight: bold;
+      background: #007bff;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
   </style>
 </head>
 <body>
 
-<button onclick="saveDocxInZip()">💾 Word (.docx) → ZIP olarak indir</button>
+<h2>CKEditor 5 ile Word Dosyasını ZIP İçinde İndir</h2>
 
-<div class="container">
-  <textarea id="editor">
-    <h2>Başlık</h2>
-    <p>Bu içerik Word dosyasına dönüştürülüp ZIP içinde indirilecek.</p>
-  </textarea>
+<div id="editor">
+  <h1>Merhaba CKEditor 5</h1>
+  <p>Bu metni düzenleyip Word dosyası olarak ZIP içinde indirebilirsiniz.</p>
 </div>
 
+<button id="saveBtn">💾 Word (.docx) ZIP Olarak İndir</button>
+
 <script>
-  tinymce.init({
-    selector: '#editor',
-    height: 800,
-    plugins: 'lists table image code',
-    toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | table | code',
-  });
+  let editorInstance;
 
-  async function saveDocxInZip() {
-    const content = tinymce.get("editor").getContent();
+  ClassicEditor
+    .create(document.querySelector('#editor'), {
+      toolbar: [
+        'heading', '|',
+        'bold', 'italic', 'underline', 'strikethrough', '|',
+        'bulletedList', 'numberedList', 'todoList', '|',
+        'link', 'blockQuote', 'insertTable', 'undo', 'redo'
+      ],
+      table: {
+        contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+      }
+    })
+    .then(editor => {
+      editorInstance = editor;
+    })
+    .catch(error => {
+      console.error(error);
+    });
 
-    // 1. HTML → DOCX dönüştür
-    const html = `
+  document.getElementById('saveBtn').addEventListener('click', async () => {
+    if (!editorInstance) return alert('Editör yüklenmedi!');
+
+    const htmlContent = editorInstance.getData();
+
+    const fullHtml = `
       <!DOCTYPE html>
-      <html><head><meta charset="utf-8"></head>
-      <body>${content}</body>
+      <html>
+        <head><meta charset="utf-8"></head>
+        <body>${htmlContent}</body>
       </html>
     `;
-    const docxBlob = htmlDocx.asBlob(html);
 
-    // 2. ZIP oluştur
+    // html-docx-js ile .docx dosyası oluştur
+    const docxBlob = window.htmlDocx.asBlob(fullHtml);
+
+    // JSZip ile ZIP dosyası oluştur ve içine docx koy
     const zip = new JSZip();
-    zip.file("belge.docx", docxBlob);
+    zip.file('belge.docx', docxBlob);
 
-    // 3. ZIP olarak indir
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    saveAs(zipBlob, "belge.zip");
-  }
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+    // FileSaver ile indir
+    saveAs(zipBlob, 'belge.zip');
+  });
 </script>
 
 </body>
