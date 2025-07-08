@@ -4,8 +4,12 @@
   <meta charset="UTF-8">
   <title>Word Benzeri Editör</title>
 
-  <!-- ✅ TinyMCE API Key'li sürüm -->
+  <!-- TinyMCE (API key ile) -->
   <script src="https://cdn.tiny.cloud/1/pds3kn2z4g058iovio38007sirlqb4vjpxxgiul81ua5o8vv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+  <!-- html-docx-js kütüphanesi (docx için) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js"></script>
 
   <style>
     body {
@@ -46,16 +50,18 @@
 </head>
 <body>
 
-<!-- ✅ Üst araç çubuğu -->
+<!-- Araç çubuğu -->
 <div class="toolbar">
-  <button onclick="saveContent()">💾 Kaydet</button>
+  <button onclick="saveAsDocx()">💾 Word olarak kaydet (.docx)</button>
   <button onclick="window.print()">🖨️ Yazdır</button>
   <input type="file" id="uploadFile" accept=".doc,.docx,.html,.txt" onchange="handleFile(event)">
 </div>
 
-<!-- ✅ Düzenlenebilir sayfa -->
+<!-- Sayfa -->
 <div class="word-page">
-  <textarea id="editor">Buraya Word belgesinden kopyala–yapıştır yapabilir veya dosya yükleyebilirsin.</textarea>
+  <textarea id="editor">
+    Buraya Word'den içerik yapıştırabilir ya da "☑ Kutucuk" ile tıklanabilir kutular ekleyebilirsin.
+  </textarea>
 </div>
 
 <script>
@@ -66,7 +72,7 @@
     plugins: [
       'image', 'table', 'lists', 'paste', 'code'
     ],
-    toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | table image | code',
+    toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | insertCheckbox | table image | code',
     paste_data_images: true,
     content_style: `
       body {
@@ -78,20 +84,26 @@
         border: 1px solid #000;
         border-collapse: collapse;
       }
-    `
+    `,
+    setup: function (editor) {
+      editor.ui.registry.addButton('insertCheckbox', {
+        text: '☑ Kutucuk',
+        tooltip: 'Tıklanabilir kutu ekle',
+        onAction: function () {
+          editor.insertContent('<input type="checkbox"> ');
+        }
+      });
+    }
   });
 
-  // ✅ HTML içeriği kaydet
-  function saveContent() {
+  // Word (docx) olarak kaydetme
+  function saveAsDocx() {
     const content = tinymce.get("editor").getContent();
-    const blob = new Blob([content], { type: "text/html;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "belge.html";
-    link.click();
+    const converted = htmlDocx.asBlob(`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${content}</body></html>`);
+    saveAs(converted, 'belge.docx');
   }
 
-  // ✅ Dosya yükle
+  // Dosya yükleme
   function handleFile(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -102,7 +114,7 @@
       if (extension === "html" || extension === "txt") {
         tinymce.get("editor").setContent(e.target.result);
       } else if (extension === "doc" || extension === "docx") {
-        alert("Word dosyaları doğrudan yüklenemez, lütfen Word'den kopyala-yapıştır yapın.");
+        alert("Word dosyaları doğrudan yüklenemez, lütfen kopyala–yapıştır yapın.");
       } else {
         alert("Desteklenmeyen dosya türü.");
       }
