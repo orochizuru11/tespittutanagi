@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.31.0/docxtemplater.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,6 +74,19 @@
         }
         .file-upload {
             margin: 20px 0;
+        }
+        .status-message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
         }
     </style>
 </head>
@@ -177,29 +189,6 @@
             </div>
 
             <div class="form-section">
-                <h2>Sürücü Bilgileri</h2>
-                <div class="form-group">
-                    <label for="surucu_adi">Adı Soyadı:</label>
-                    <input type="text" id="surucu_adi" name="surucu_adi">
-                </div>
-
-                <div class="form-group">
-                    <label for="surucu_tc">T.C. Kimlik No:</label>
-                    <input type="text" id="surucu_tc" name="surucu_tc">
-                </div>
-
-                <div class="form-group">
-                    <label for="surucu_tel">Telefon No:</label>
-                    <input type="text" id="surucu_tel" name="surucu_tel">
-                </div>
-
-                <div class="form-group">
-                    <label for="surucu_dogum">Doğum Yeri/Tarihi:</label>
-                    <input type="text" id="surucu_dogum" name="surucu_dogum">
-                </div>
-            </div>
-
-            <div class="form-section">
                 <h2>Araç Bilgileri</h2>
                 <div class="form-group">
                     <label for="plaka">Araç Plakası:</label>
@@ -227,6 +216,8 @@
 
             <button type="button" onclick="generateDocument()">Belgeyi Oluştur ve İndir</button>
         </form>
+
+        <div id="statusMessage" class="status-message" style="display: none;"></div>
     </div>
 
     <script>
@@ -237,60 +228,67 @@
             const file = e.target.files[0];
             if (file) {
                 templateFile = file;
+                showStatus("Word şablonu başarıyla yüklendi.", "success");
             }
         });
 
-        function generateDocument() {
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = `status-message ${type}`;
+            statusElement.style.display = 'block';
+            
+            // Mesajı 5 saniye sonra otomatik gizle
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 5000);
+        }
+
+        async function generateDocument() {
             if (!templateFile) {
-                alert("Lütfen önce bir Word şablonu yükleyin.");
+                showStatus("Lütfen önce bir Word şablonu yükleyin.", "error");
                 return;
             }
 
-            // Form verilerini topla
-            const formData = new FormData(document.getElementById('tutanakForm'));
-            const data = {
-                rutin_denetim: document.getElementById('rutin_denetim').checked ? '✓' : '◻',
-                sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? '✓' : '◻',
-                cagri_merkezi: document.getElementById('cagri_merkezi').checked ? '✓' : '◻',
-                info: document.getElementById('info').checked ? '✓' : '◻',
-                cimer: document.getElementById('cimer').checked ? '✓' : '◻',
-                dilekce: document.getElementById('dilekce').checked ? '✓' : '◻',
-                kayit_no: formData.get('kayit_no'),
-                sira_no: formData.get('sira_no'),
-                is_emri_id: formData.get('is_emri_id'),
-                info_sayi: formData.get('info_sayi'),
-                cimer_sayi: formData.get('cimer_sayi'),
-                dilekce_tarih: formData.get('dilekce_tarih'),
-                sahip_adi: formData.get('sahip_adi'),
-                sahip_tc: formData.get('sahip_tc'),
-                sahip_tel: formData.get('sahip_tel'),
-                sahip_dogum: formData.get('sahip_dogum'),
-                sahip_adres: formData.get('sahip_adres'),
-                surucu_adi: formData.get('surucu_adi'),
-                surucu_tc: formData.get('surucu_tc'),
-                surucu_tel: formData.get('surucu_tel'),
-                surucu_dogum: formData.get('surucu_dogum'),
-                plaka: formData.get('plaka'),
-                kooperatif: formData.get('kooperatif'),
-                hat_no: formData.get('hat_no'),
-                icerik: formData.get('icerik')
-            };
+            try {
+                // Form verilerini topla
+                const formData = {
+                    rutin_denetim: document.getElementById('rutin_denetim').checked ? '✓' : '◻',
+                    sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? '✓' : '◻',
+                    cagri_merkezi: document.getElementById('cagri_merkezi').checked ? '✓' : '◻',
+                    info: document.getElementById('info').checked ? '✓' : '◻',
+                    cimer: document.getElementById('cimer').checked ? '✓' : '◻',
+                    dilekce: document.getElementById('dilekce').checked ? '✓' : '◻',
+                    kayit_no: document.getElementById('kayit_no').value || '',
+                    sira_no: document.getElementById('sira_no').value || '2025-3-1',
+                    is_emri_id: document.getElementById('is_emri_id').value || '',
+                    info_sayi: document.getElementById('info_sayi').value || '',
+                    cimer_sayi: document.getElementById('cimer_sayi').value || '',
+                    dilekce_tarih: document.getElementById('dilekce_tarih').value || '',
+                    sahip_adi: document.getElementById('sahip_adi').value || '',
+                    sahip_tc: document.getElementById('sahip_tc').value || '',
+                    sahip_tel: document.getElementById('sahip_tel').value || '',
+                    sahip_dogum: document.getElementById('sahip_dogum').value || '',
+                    sahip_adres: document.getElementById('sahip_adres').value || '',
+                    plaka: document.getElementById('plaka').value || '',
+                    kooperatif: document.getElementById('kooperatif').value || '',
+                    hat_no: document.getElementById('hat_no').value || '',
+                    icerik: document.getElementById('icerik').value || ''
+                };
 
-            // Word belgesini oluştur
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                const zip = new JSZip(content);
-                const doc = new docxtemplater().loadZip(zip);
+                // Word belgesini oluştur
+                const arrayBuffer = await readFileAsArrayBuffer(templateFile);
+                const zip = new JSZip(arrayBuffer);
+                const doc = new docxtemplater();
+                doc.loadZip(zip);
 
-                // Verileri doldur
-                doc.setData(data);
+                // Değişkenleri ayarla (hata olsa bile devam et)
                 try {
+                    doc.setData(formData);
                     doc.render();
-                } catch (error) {
-                    console.error(error);
-                    alert("Belge oluşturulurken bir hata oluştu: " + error.message);
-                    return;
+                } catch (templatingError) {
+                    console.warn("Şablon doldurma hatası:", templatingError);
+                    // Hata olsa bile devam ediyoruz
                 }
 
                 // İndirilebilir dosya oluştur
@@ -299,9 +297,22 @@
                     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 });
 
-                saveAs(out, "tutanak_" + new Date().toISOString().slice(0, 10) + ".docx");
-            };
-            reader.readAsArrayBuffer(templateFile);
+                saveAs(out, `tutanak_${new Date().toISOString().slice(0,10)}.docx`);
+                showStatus("Belge başarıyla oluşturuldu ve indiriliyor...", "success");
+
+            } catch (error) {
+                console.error("Belge oluşturma hatası:", error);
+                showStatus(`Hata: ${error.message}`, "error");
+            }
+        }
+
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
         }
 
         // Örnek verilerle formu doldur (isteğe bağlı)
@@ -311,7 +322,6 @@
             document.getElementById('cimer_sayi').value = "CIM2025001";
             document.getElementById('dilekce_tarih').value = "01.03.2025-123";
             document.getElementById('sahip_adi').value = "Ahmet Yılmaz";
-            document.getElementById('surucu_adi').value = "Mehmet Demir";
             document.getElementById('plaka').value = "48 ABC 123";
         };
     </script>
