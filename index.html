@@ -7,14 +7,220 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.31.0/docxtemplater.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js"></script>
     <style>
-        /* CSS kodu aynı kalabilir */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-section {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-item input {
+            margin-right: 5px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .file-upload {
+            margin: 20px 0;
+        }
+        .status-message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
-    <!-- HTML form kısmı aynı kalabilir -->
-    
+    <div class="container">
+        <h1>MUĞLA BÜYÜKŞEHİR BELEDİYESİ<br>ULAŞIM DAİRESİ BAŞKANLIĞI TESPİT TUTANAĞI DÜZENLEYİCİ</h1>
+
+        <div class="file-upload">
+            <label for="templateFile">Word Şablonu Yükle:</label>
+            <input type="file" id="templateFile" accept=".docx">
+        </div>
+
+        <form id="tutanakForm">
+            <div class="form-section">
+                <h2>Başvuru Bilgileri</h2>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="rutin_denetim" name="rutin_denetim">
+                        <label for="rutin_denetim">Rutin Denetim</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="sozlu_sikayet" name="sozlu_sikayet">
+                        <label for="sozlu_sikayet">Sözlü/Telefon Şikayeti</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cagri_merkezi" name="cagri_merkezi">
+                        <label for="cagri_merkezi">Çağrı Merkezi</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="info" name="info">
+                        <label for="info">Info</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cimer" name="cimer">
+                        <label for="cimer">CİMER</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="dilekce" name="dilekce">
+                        <label for="dilekce">Dilekçe</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="kayit_no">Kayıt No:</label>
+                    <input type="text" id="kayit_no" name="kayit_no">
+                </div>
+
+                <div class="form-group">
+                    <label for="sira_no">Sıra No:</label>
+                    <input type="text" id="sira_no" name="sira_no" value="2025-3-1">
+                </div>
+
+                <div class="form-group">
+                    <label for="is_emri_id">İş Emri ID:</label>
+                    <input type="text" id="is_emri_id" name="is_emri_id">
+                </div>
+
+                <div class="form-group">
+                    <label for="info_sayi">Info Sayı:</label>
+                    <input type="text" id="info_sayi" name="info_sayi">
+                </div>
+
+                <div class="form-group">
+                    <label for="cimer_sayi">CİMER Sayı:</label>
+                    <input type="text" id="cimer_sayi" name="cimer_sayi">
+                </div>
+
+                <div class="form-group">
+                    <label for="dilekce_tarih">Dilekçe Tarih-Sayı:</label>
+                    <input type="text" id="dilekce_tarih" name="dilekce_tarih">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Araç Sahibi Bilgileri</h2>
+                <div class="form-group">
+                    <label for="sahip_adi">Adı Soyadı:</label>
+                    <input type="text" id="sahip_adi" name="sahip_adi">
+                </div>
+
+                <div class="form-group">
+                    <label for="sahip_tc">T.C. Kimlik No:</label>
+                    <input type="text" id="sahip_tc" name="sahip_tc">
+                </div>
+
+                <div class="form-group">
+                    <label for="sahip_tel">Telefon No:</label>
+                    <input type="text" id="sahip_tel" name="sahip_tel">
+                </div>
+
+                <div class="form-group">
+                    <label for="sahip_dogum">Doğum Yeri/Tarihi:</label>
+                    <input type="text" id="sahip_dogum" name="sahip_dogum">
+                </div>
+
+                <div class="form-group">
+                    <label for="sahip_adres">Açık Adres:</label>
+                    <textarea id="sahip_adres" name="sahip_adres" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Araç Bilgileri</h2>
+                <div class="form-group">
+                    <label for="plaka">Araç Plakası:</label>
+                    <input type="text" id="plaka" name="plaka">
+                </div>
+
+                <div class="form-group">
+                    <label for="kooperatif">Kooperatif Bilgileri:</label>
+                    <input type="text" id="kooperatif" name="kooperatif">
+                </div>
+
+                <div class="form-group">
+                    <label for="hat_no">Hat Numarası/Güzergah Adı:</label>
+                    <input type="text" id="hat_no" name="hat_no">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>İçerik</h2>
+                <div class="form-group">
+                    <label for="icerik">Tutanak İçeriği:</label>
+                    <textarea id="icerik" name="icerik" rows="6"></textarea>
+                </div>
+            </div>
+
+            <button type="button" onclick="generateDocument()">Belgeyi Oluştur ve İndir</button>
+        </form>
+
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+
     <script>
         let templateFile = null;
 
@@ -38,90 +244,73 @@
             }, 5000);
         }
 
-        async function generateDocument() {
+        function generateDocument() {
             if (!templateFile) {
                 showStatus("Lütfen önce bir Word şablonu yükleyin.", "error");
                 return;
             }
 
-            try {
-                // Form verilerini topla
-                const formData = {
-                    rutin_denetim: document.getElementById('rutin_denetim').checked ? '✓' : '◻',
-                    sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? '✓' : '◻',
-                    cagri_merkezi: document.getElementById('cagri_merkezi').checked ? '✓' : '◻',
-                    info: document.getElementById('info').checked ? '✓' : '◻',
-                    cimer: document.getElementById('cimer').checked ? '✓' : '◻',
-                    dilekce: document.getElementById('dilekce').checked ? '✓' : '◻',
-                    kayit_no: document.getElementById('kayit_no').value || '',
-                    sira_no: document.getElementById('sira_no').value || '2025-3-1',
-                    is_emri_id: document.getElementById('is_emri_id').value || '',
-                    info_sayi: document.getElementById('info_sayi').value || '',
-                    cimer_sayi: document.getElementById('cimer_sayi').value || '',
-                    dilekce_tarih: document.getElementById('dilekce_tarih').value || '',
-                    sahip_adi: document.getElementById('sahip_adi').value || '',
-                    sahip_tc: document.getElementById('sahip_tc').value || '',
-                    sahip_tel: document.getElementById('sahip_tel').value || '',
-                    sahip_dogum: document.getElementById('sahip_dogum').value || '',
-                    sahip_adres: document.getElementById('sahip_adres').value || '',
-                    plaka: document.getElementById('plaka').value || '',
-                    kooperatif: document.getElementById('kooperatif').value || '',
-                    hat_no: document.getElementById('hat_no').value || '',
-                    icerik: document.getElementById('icerik').value || ''
-                };
+            // Form verilerini topla
+            const formData = {
+                rutin_denetim: document.getElementById('rutin_denetim').checked ? '✓' : '◻',
+                sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? '✓' : '◻',
+                cagri_merkezi: document.getElementById('cagri_merkezi').checked ? '✓' : '◻',
+                info: document.getElementById('info').checked ? '✓' : '◻',
+                cimer: document.getElementById('cimer').checked ? '✓' : '◻',
+                dilekce: document.getElementById('dilekce').checked ? '✓' : '◻',
+                kayit_no: document.getElementById('kayit_no').value || '',
+                sira_no: document.getElementById('sira_no').value || '2025-3-1',
+                is_emri_id: document.getElementById('is_emri_id').value || '',
+                info_sayi: document.getElementById('info_sayi').value || '',
+                cimer_sayi: document.getElementById('cimer_sayi').value || '',
+                dilekce_tarih: document.getElementById('dilekce_tarih').value || '',
+                sahip_adi: document.getElementById('sahip_adi').value || '',
+                sahip_tc: document.getElementById('sahip_tc').value || '',
+                sahip_tel: document.getElementById('sahip_tel').value || '',
+                sahip_dogum: document.getElementById('sahip_dogum').value || '',
+                sahip_adres: document.getElementById('sahip_adres').value || '',
+                plaka: document.getElementById('plaka').value || '',
+                kooperatif: document.getElementById('kooperatif').value || '',
+                hat_no: document.getElementById('hat_no').value || '',
+                icerik: document.getElementById('icerik').value || ''
+            };
 
-                // Word belgesini oluştur
-                const arrayBuffer = await readFileAsArrayBuffer(templateFile);
-                
-                // JSZip yapılandırması
-                const zip = new JSZip(arrayBuffer);
-                const doc = new docxtemplater();
-                
+            // Word belgesini oluştur
+            const reader = new FileReader();
+            reader.onload = function(e) {
                 try {
-                    doc.loadZip(zip);
-                    
+                    const content = e.target.result;
+                    const zip = new JSZip(content);
+                    const doc = new docxtemplater().loadZip(zip);
+
                     // Değişkenleri ayarla
                     doc.setData(formData);
                     
                     try {
                         doc.render();
-                    } catch (renderError) {
-                        console.warn("Render hatası:", renderError);
-                        // Hata olsa bile devam et
+                    } catch (error) {
+                        console.warn("Render hatası (devam ediliyor):", error);
                     }
-                    
-                    // Word belgesini oluştur
+
+                    // İndirilebilir dosya oluştur
                     const out = doc.getZip().generate({
                         type: "blob",
-                        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        compression: "DEFLATE"
+                        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     });
 
-                    // Dosyayı indir
-                    saveAs(out, `tutanak_${new Date().toISOString().slice(0,10)}.docx`);
+                    saveAs(out, "tutanak_" + new Date().toISOString().slice(0, 10) + ".docx");
                     showStatus("Belge başarıyla oluşturuldu ve indiriliyor...", "success");
                     
                 } catch (error) {
-                    console.error("Docxtemplater hatası:", error);
-                    showStatus(`Belge oluşturma hatası: ${error.message}`, "error");
+                    console.error("Belge oluşturma hatası:", error);
+                    showStatus(`Hata: ${error.message}`, "error");
                 }
-                
-            } catch (error) {
-                console.error("Genel hata:", error);
-                showStatus(`Bir hata oluştu: ${error.message}`, "error");
-            }
-        }
-
-        function readFileAsArrayBuffer(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = (error) => {
-                    console.error("Dosya okuma hatası:", error);
-                    reject(error);
-                };
-                reader.readAsArrayBuffer(file);
-            });
+            };
+            reader.onerror = function(error) {
+                console.error("Dosya okuma hatası:", error);
+                showStatus("Dosya okunurken hata oluştu", "error");
+            };
+            reader.readAsArrayBuffer(templateFile);
         }
 
         // Örnek verilerle formu doldur (isteğe bağlı)
