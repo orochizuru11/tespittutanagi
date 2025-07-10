@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Muğla Büyükşehir Belediyesi - Tutanak Düzenleyici</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.31.0/docxtemplater.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -64,50 +68,23 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            margin-right: 10px;
         }
         button:hover {
             background-color: #2980b9;
         }
-        .preview-section {
-            margin-top: 30px;
-        }
-        .document-preview {
-            border: 1px solid #ddd;
-            padding: 20px;
-            background-color: white;
-            min-height: 500px;
-        }
-        .header-logo {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .header-logo img {
-            height: 50px;
-            margin-right: 15px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
+        .file-upload {
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header-logo">
-            <img src="media/image1.jpeg" alt="Muğla Büyükşehir Belediyesi Logo">
-            <h1>MUĞLA BÜYÜKŞEHİR BELEDİYESİ<br>ULAŞIM DAİRESİ BAŞKANLIĞI TESPİT TUTANAĞI DÜZENLEYİCİ</h1>
+        <h1>MUĞLA BÜYÜKŞEHİR BELEDİYESİ<br>ULAŞIM DAİRESİ BAŞKANLIĞI TESPİT TUTANAĞI DÜZENLEYİCİ</h1>
+
+        <div class="file-upload">
+            <label for="templateFile">Word Şablonu Yükle:</label>
+            <input type="file" id="templateFile" accept=".docx">
         </div>
 
         <form id="tutanakForm">
@@ -115,27 +92,27 @@
                 <h2>Başvuru Bilgileri</h2>
                 <div class="checkbox-group">
                     <div class="checkbox-item">
-                        <input type="checkbox" id="rutin_denetim" name="basvuru_tipi">
+                        <input type="checkbox" id="rutin_denetim" name="rutin_denetim">
                         <label for="rutin_denetim">Rutin Denetim</label>
                     </div>
                     <div class="checkbox-item">
-                        <input type="checkbox" id="sozlu_sikayet" name="basvuru_tipi">
+                        <input type="checkbox" id="sozlu_sikayet" name="sozlu_sikayet">
                         <label for="sozlu_sikayet">Sözlü/Telefon Şikayeti</label>
                     </div>
                     <div class="checkbox-item">
-                        <input type="checkbox" id="cagri_merkezi" name="basvuru_tipi">
+                        <input type="checkbox" id="cagri_merkezi" name="cagri_merkezi">
                         <label for="cagri_merkezi">Çağrı Merkezi</label>
                     </div>
                     <div class="checkbox-item">
-                        <input type="checkbox" id="info" name="basvuru_tipi">
+                        <input type="checkbox" id="info" name="info">
                         <label for="info">Info</label>
                     </div>
                     <div class="checkbox-item">
-                        <input type="checkbox" id="cimer" name="basvuru_tipi">
+                        <input type="checkbox" id="cimer" name="cimer">
                         <label for="cimer">CİMER</label>
                     </div>
                     <div class="checkbox-item">
-                        <input type="checkbox" id="dilekce" name="basvuru_tipi">
+                        <input type="checkbox" id="dilekce" name="dilekce">
                         <label for="dilekce">Dilekçe</label>
                     </div>
                 </div>
@@ -152,22 +129,22 @@
 
                 <div class="form-group">
                     <label for="is_emri_id">İş Emri ID:</label>
-                    <input type="text" id="is_emri_id" name="is_emri_id" placeholder="{{is_emri_id}}">
+                    <input type="text" id="is_emri_id" name="is_emri_id">
                 </div>
 
                 <div class="form-group">
                     <label for="info_sayi">Info Sayı:</label>
-                    <input type="text" id="info_sayi" name="info_sayi" placeholder="{{info_sayi}}">
+                    <input type="text" id="info_sayi" name="info_sayi">
                 </div>
 
                 <div class="form-group">
                     <label for="cimer_sayi">CİMER Sayı:</label>
-                    <input type="text" id="cimer_sayi" name="cimer_sayi" placeholder="{{cimer_sayi}}">
+                    <input type="text" id="cimer_sayi" name="cimer_sayi">
                 </div>
 
                 <div class="form-group">
                     <label for="dilekce_tarih">Dilekçe Tarih-Sayı:</label>
-                    <input type="text" id="dilekce_tarih" name="dilekce_tarih" placeholder="{{dilekce_tarih}}">
+                    <input type="text" id="dilekce_tarih" name="dilekce_tarih">
                 </div>
             </div>
 
@@ -175,27 +152,27 @@
                 <h2>Araç Sahibi Bilgileri</h2>
                 <div class="form-group">
                     <label for="sahip_adi">Adı Soyadı:</label>
-                    <input type="text" id="sahip_adi" name="sahip_adi" placeholder="{{sahip_adi}}">
+                    <input type="text" id="sahip_adi" name="sahip_adi">
                 </div>
 
                 <div class="form-group">
                     <label for="sahip_tc">T.C. Kimlik No:</label>
-                    <input type="text" id="sahip_tc" name="sahip_tc" placeholder="{{sahip_tc}}">
+                    <input type="text" id="sahip_tc" name="sahip_tc">
                 </div>
 
                 <div class="form-group">
                     <label for="sahip_tel">Telefon No:</label>
-                    <input type="text" id="sahip_tel" name="sahip_tel" placeholder="{{sahip_tel}}">
+                    <input type="text" id="sahip_tel" name="sahip_tel">
                 </div>
 
                 <div class="form-group">
                     <label for="sahip_dogum">Doğum Yeri/Tarihi:</label>
-                    <input type="text" id="sahip_dogum" name="sahip_dogum" placeholder="{{sahip_dogum}}">
+                    <input type="text" id="sahip_dogum" name="sahip_dogum">
                 </div>
 
                 <div class="form-group">
                     <label for="sahip_adres">Açık Adres:</label>
-                    <textarea id="sahip_adres" name="sahip_adres" rows="3" placeholder="{{sahip_adres}}"></textarea>
+                    <textarea id="sahip_adres" name="sahip_adres" rows="3"></textarea>
                 </div>
             </div>
 
@@ -203,22 +180,22 @@
                 <h2>Sürücü Bilgileri</h2>
                 <div class="form-group">
                     <label for="surucu_adi">Adı Soyadı:</label>
-                    <input type="text" id="surucu_adi" name="surucu_adi" placeholder="{{surucu_adi}}">
+                    <input type="text" id="surucu_adi" name="surucu_adi">
                 </div>
 
                 <div class="form-group">
                     <label for="surucu_tc">T.C. Kimlik No:</label>
-                    <input type="text" id="surucu_tc" name="surucu_tc" placeholder="{{surucu_tc}}">
+                    <input type="text" id="surucu_tc" name="surucu_tc">
                 </div>
 
                 <div class="form-group">
                     <label for="surucu_tel">Telefon No:</label>
-                    <input type="text" id="surucu_tel" name="surucu_tel" placeholder="{{surucu_tel}}">
+                    <input type="text" id="surucu_tel" name="surucu_tel">
                 </div>
 
                 <div class="form-group">
                     <label for="surucu_dogum">Doğum Yeri/Tarihi:</label>
-                    <input type="text" id="surucu_dogum" name="surucu_dogum" placeholder="{{surucu_dogum}}">
+                    <input type="text" id="surucu_dogum" name="surucu_dogum">
                 </div>
             </div>
 
@@ -226,17 +203,17 @@
                 <h2>Araç Bilgileri</h2>
                 <div class="form-group">
                     <label for="plaka">Araç Plakası:</label>
-                    <input type="text" id="plaka" name="plaka" placeholder="{{plaka}}">
+                    <input type="text" id="plaka" name="plaka">
                 </div>
 
                 <div class="form-group">
                     <label for="kooperatif">Kooperatif Bilgileri:</label>
-                    <input type="text" id="kooperatif" name="kooperatif" placeholder="{{kooperatif}}">
+                    <input type="text" id="kooperatif" name="kooperatif">
                 </div>
 
                 <div class="form-group">
                     <label for="hat_no">Hat Numarası/Güzergah Adı:</label>
-                    <input type="text" id="hat_no" name="hat_no" placeholder="{{hat_no}}">
+                    <input type="text" id="hat_no" name="hat_no">
                 </div>
             </div>
 
@@ -244,199 +221,98 @@
                 <h2>İçerik</h2>
                 <div class="form-group">
                     <label for="icerik">Tutanak İçeriği:</label>
-                    <textarea id="icerik" name="icerik" rows="6" placeholder="{{icerik}}"></textarea>
+                    <textarea id="icerik" name="icerik" rows="6"></textarea>
                 </div>
             </div>
 
-            <button type="button" onclick="generateDocument()">Belgeyi Oluştur</button>
-            <button type="button" onclick="saveDocument()">Belgeyi Kaydet</button>
-            <button type="button" onclick="printDocument()">Yazdır</button>
+            <button type="button" onclick="generateDocument()">Belgeyi Oluştur ve İndir</button>
         </form>
-
-        <div class="preview-section">
-            <h2>Belge Önizleme</h2>
-            <div class="document-preview" id="documentPreview">
-                <!-- Belge önizleme burada oluşturulacak -->
-            </div>
-        </div>
     </div>
 
     <script>
+        let templateFile = null;
+
+        // Word şablonunu yükle
+        document.getElementById('templateFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                templateFile = file;
+            }
+        });
+
         function generateDocument() {
-            // Form verilerini al
+            if (!templateFile) {
+                alert("Lütfen önce bir Word şablonu yükleyin.");
+                return;
+            }
+
+            // Form verilerini topla
             const formData = new FormData(document.getElementById('tutanakForm'));
-            const data = Object.fromEntries(formData.entries());
-            
-            // Checkbox değerlerini ayarla
-            data.rutin_denetim = document.getElementById('rutin_denetim').checked ? '✓' : '◻';
-            data.sozlu_sikayet = document.getElementById('sozlu_sikayet').checked ? '✓' : '◻';
-            data.cagri_merkezi = document.getElementById('cagri_merkezi').checked ? '✓' : '◻';
-            data.info = document.getElementById('info').checked ? '✓' : '◻';
-            data.cimer = document.getElementById('cimer').checked ? '✓' : '◻';
-            data.dilekce = document.getElementById('dilekce').checked ? '✓' : '◻';
-            
-            // HTML oluştur
-            let html = `
-                <div class="header-logo">
-                    <img src="media/image1.jpeg" alt="Muğla Büyükşehir Belediyesi Logo">
-                    <h1>MUĞLA BÜYÜKŞEHİR BELEDİYESİ</h1>
-                </div>
-                <p>Kayıt No: ${data.kayit_no || ''}</p>
-                <p>Sıra No: ${data.sira_no || '2025-3-1'}</p>
-                <h2>ULAŞIM DAİRESİ BAŞKANLIĞI</h2>
-                <h2>TESPİT TUTANAĞI</h2>
-                
-                <table>
-                    <tr>
-                        <th>Rutin Denetim</th>
-                        <th>Sözlü/Telefon Şikayeti</th>
-                        <th>Çağrı Merkezi</th>
-                        <th>Info</th>
-                        <th>CİMER</th>
-                        <th>Dilekçe</th>
-                    </tr>
-                    <tr>
-                        <td>${data.rutin_denetim}</td>
-                        <td>${data.sozlu_sikayet}</td>
-                        <td>${data.cagri_merkezi}</td>
-                        <td>${data.info}</td>
-                        <td>${data.cimer}</td>
-                        <td>${data.dilekce}</td>
-                    </tr>
-                </table>
-                
-                <table>
-                    <tr>
-                        <th colspan="3">Araç Sahibi/Ortak Kimlik Bilgileri</th>
-                        <th colspan="3">Araç Sürücüsü Kimlik Bilgileri</th>
-                    </tr>
-                    <tr>
-                        <td><strong>Adı Soyadı:</strong></td>
-                        <td>${data.sahip_adi || ''}</td>
-                        <td></td>
-                        <td><strong>Adı Soyadı:</strong></td>
-                        <td>${data.surucu_adi || ''}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><strong>T.C. Kimlik No:</strong></td>
-                        <td>${data.sahip_tc || ''}</td>
-                        <td></td>
-                        <td><strong>T.C. Kimlik No:</strong></td>
-                        <td>${data.surucu_tc || ''}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Telefon No:</strong></td>
-                        <td>${data.sahip_tel || ''}</td>
-                        <td></td>
-                        <td><strong>Telefon No:</strong></td>
-                        <td>${data.surucu_tel || ''}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Doğum Yeri/Tarihi:</strong></td>
-                        <td>${data.sahip_dogum || ''}</td>
-                        <td></td>
-                        <td><strong>Doğum Yeri/Tarihi:</strong></td>
-                        <td>${data.surucu_dogum || ''}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Araç Plakası:</strong></td>
-                        <td>${data.plaka || ''}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Kooperatif Bilgileri:</strong></td>
-                        <td>${data.kooperatif || ''}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Hat Numarası/Güzergah Adı:</strong></td>
-                        <td>${data.hat_no || ''}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Araç Sahibi Açık Adresi:</strong></td>
-                        <td colspan="2">${data.sahip_adres || ''}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </table>
-                
-                <p><strong>Yukarıda kimlik bilgileri yazılı sürücü hakkında;</strong></p>
-                <p>01.11.2023 tarihli ve 2023/7-462 sayılı UKOME kararının 12. Maddesine (<em>Tehirli çalışmak, duraklarda gereksiz bekleme yapmak, duraklarda durmamak, durak harici yolcu almak, indirmek ve sefer esnasında yakıt ikmali yaparak sefer aksatmak.</em>) uymadığı tespit edilmiş olup,</p>
-                <p><strong>iş bu tutanak tanzim edilmiştir.</strong></p>
-                
-                <p>${data.icerik || ''}</p>
-                
-                <table>
-                    <tr>
-                        <th>Tespit Eden Personel</th>
-                        <th>Birim Sorumlusu</th>
-                        <th>Toplu Ulaşım Hizmetleri Şb. Md. V.</th>
-                        <th>Ulaşım Dairesi Başkanı</th>
-                    </tr>
-                    <tr>
-                        <td>İrfan ÖZBİLGİ</td>
-                        <td>Fatih DURMAZ</td>
-                        <td>Mustafa ÇELEBİ</td>
-                        <td>Süleyman ÖZDEMİR</td>
-                    </tr>
-                </table>
-                
-                <p><strong>Ek:</strong></p>
-                <p>1-Araç Ruhsatı.</p>
-                <p>2-Güzergah İzin Belgesi.</p>
-                <p>3-Kamera İzleme Raporu.</p>
-                <p>4-01.11.2023 tarihli ve 2023/7-462 sayılı UKOME kararı.</p>
-                <p>5-Araç İçi Kamera Görüntüleri.</p>
-            `;
-            
-            // Önizlemeyi güncelle
-            document.getElementById('documentPreview').innerHTML = html;
+            const data = {
+                rutin_denetim: document.getElementById('rutin_denetim').checked ? '✓' : '◻',
+                sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? '✓' : '◻',
+                cagri_merkezi: document.getElementById('cagri_merkezi').checked ? '✓' : '◻',
+                info: document.getElementById('info').checked ? '✓' : '◻',
+                cimer: document.getElementById('cimer').checked ? '✓' : '◻',
+                dilekce: document.getElementById('dilekce').checked ? '✓' : '◻',
+                kayit_no: formData.get('kayit_no'),
+                sira_no: formData.get('sira_no'),
+                is_emri_id: formData.get('is_emri_id'),
+                info_sayi: formData.get('info_sayi'),
+                cimer_sayi: formData.get('cimer_sayi'),
+                dilekce_tarih: formData.get('dilekce_tarih'),
+                sahip_adi: formData.get('sahip_adi'),
+                sahip_tc: formData.get('sahip_tc'),
+                sahip_tel: formData.get('sahip_tel'),
+                sahip_dogum: formData.get('sahip_dogum'),
+                sahip_adres: formData.get('sahip_adres'),
+                surucu_adi: formData.get('surucu_adi'),
+                surucu_tc: formData.get('surucu_tc'),
+                surucu_tel: formData.get('surucu_tel'),
+                surucu_dogum: formData.get('surucu_dogum'),
+                plaka: formData.get('plaka'),
+                kooperatif: formData.get('kooperatif'),
+                hat_no: formData.get('hat_no'),
+                icerik: formData.get('icerik')
+            };
+
+            // Word belgesini oluştur
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const zip = new JSZip(content);
+                const doc = new docxtemplater().loadZip(zip);
+
+                // Verileri doldur
+                doc.setData(data);
+                try {
+                    doc.render();
+                } catch (error) {
+                    console.error(error);
+                    alert("Belge oluşturulurken bir hata oluştu: " + error.message);
+                    return;
+                }
+
+                // İndirilebilir dosya oluştur
+                const out = doc.getZip().generate({
+                    type: "blob",
+                    mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                });
+
+                saveAs(out, "tutanak_" + new Date().toISOString().slice(0, 10) + ".docx");
+            };
+            reader.readAsArrayBuffer(templateFile);
         }
-        
-        function saveDocument() {
-            // Bu fonksiyon belgeyi PDF veya Word olarak kaydedebilir
-            alert("Belge kaydetme işlemi burada gerçekleştirilecek.");
-            // Gerçek uygulamada html2pdf.js veya benzeri bir kütüphane kullanılabilir
-        }
-        
-        function printDocument() {
-            // Bu fonksiyon belgeyi yazdırabilir
-            const printContent = document.getElementById('documentPreview').innerHTML;
-            const originalContent = document.body.innerHTML;
-            
-            document.body.innerHTML = printContent;
-            window.print();
-            document.body.innerHTML = originalContent;
-            
-            // Sayfayı yenile
-            window.location.reload();
-        }
-        
-        // Sayfa yüklendiğinde varsayılan değerleri ayarla
+
+        // Örnek verilerle formu doldur (isteğe bağlı)
         window.onload = function() {
-            // Örnek verilerle formu doldur (isteğe bağlı)
             document.getElementById('is_emri_id').value = "EMR2025001";
             document.getElementById('info_sayi').value = "INF2025001";
             document.getElementById('cimer_sayi').value = "CIM2025001";
             document.getElementById('dilekce_tarih').value = "01.03.2025-123";
-            
-            // Başlangıç önizlemesi oluştur
-            generateDocument();
+            document.getElementById('sahip_adi').value = "Ahmet Yılmaz";
+            document.getElementById('surucu_adi').value = "Mehmet Demir";
+            document.getElementById('plaka').value = "48 ABC 123";
         };
     </script>
 </body>
