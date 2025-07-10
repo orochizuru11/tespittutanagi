@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
-<title>Şablon Yükle & Belge Oluştur</title>
+<title>Şablon Yükle & Hata Yakalama</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; max-width: 700px; }
   label { display: block; margin-top: 10px; }
@@ -15,7 +15,7 @@
 </head>
 <body>
 
-<h2>Şablon Dosyası Yükle ve Belge Oluştur</h2>
+<h2>Şablon Dosyası Yükle & Hata Yakala</h2>
 
 <label>Şablon Dosyası (.docx): <input type="file" id="templateFile" accept=".docx" /></label>
 
@@ -77,33 +77,46 @@
       return;
     }
 
+    const data = {
+      rutin_denetim: document.getElementById('rutin_denetim').checked ? "Rutin Denetim Metni" : "",
+      sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? "Sözlü/Telefon Şikayet Metni" : "",
+      cagri_merkezi: document.getElementById('cagri_merkezi').checked ? "Çağrı Merkezi Metni" : "",
+      info: document.getElementById('info').checked ? "İnfo Metni" : "",
+      cimer: document.getElementById('cimer').checked ? "CİMER Metni" : "",
+      dilekce: document.getElementById('dilekce').checked ? "Dilekçe Metni" : "",
+
+      is_emri_id: document.getElementById('is_emri_id').value,
+      info_sayi: document.getElementById('info_sayi').value,
+      dilekce_tarih: document.getElementById('dilekce_tarih').value,
+      sahip_adi: document.getElementById('sahip_adi').value,
+      sahip_tc: document.getElementById('sahip_tc').value,
+      sahip_tel: document.getElementById('sahip_tel').value,
+      sahip_dogum: document.getElementById('sahip_dogum').value,
+      plaka: document.getElementById('plaka').value,
+      kooperatif: document.getElementById('kooperatif').value,
+      hat_no: document.getElementById('hat_no').value,
+      sahip_adres: document.getElementById('sahip_adres').value,
+      icerik: document.getElementById('icerik').value,
+    };
+
     try {
       const zip = new PizZip(loadedTemplateContent);
       const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-
-      const data = {
-        rutin_denetim: document.getElementById('rutin_denetim').checked ? "Rutin Denetim Metni" : "",
-        sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? "Sözlü/Telefon Şikayet Metni" : "",
-        cagri_merkezi: document.getElementById('cagri_merkezi').checked ? "Çağrı Merkezi Metni" : "",
-        info: document.getElementById('info').checked ? "İnfo Metni" : "",
-        cimer: document.getElementById('cimer').checked ? "CİMER Metni" : "",
-        dilekce: document.getElementById('dilekce').checked ? "Dilekçe Metni" : "",
-
-        is_emri_id: document.getElementById('is_emri_id').value,
-        info_sayi: document.getElementById('info_sayi').value,
-        dilekce_tarih: document.getElementById('dilekce_tarih').value,
-        sahip_adi: document.getElementById('sahip_adi').value,
-        sahip_tc: document.getElementById('sahip_tc').value,
-        sahip_tel: document.getElementById('sahip_tel').value,
-        sahip_dogum: document.getElementById('sahip_dogum').value,
-        plaka: document.getElementById('plaka').value,
-        kooperatif: document.getElementById('kooperatif').value,
-        hat_no: document.getElementById('hat_no').value,
-        sahip_adres: document.getElementById('sahip_adres').value,
-        icerik: document.getElementById('icerik').value,
-      };
-
-      doc.render(data);
+      
+      // Detaylı hata yakalama burada
+      try {
+        doc.render(data);
+      } catch (error) {
+        if (error.properties && error.properties.errors instanceof Array) {
+          const errors = error.properties.errors.map(e => e.properties.explanation).join("\n");
+          alert("Şablon işlenirken hata oluştu:\n" + errors);
+          console.error("Docxtemplater hataları:\n", errors);
+        } else {
+          alert("Hata: " + error.message);
+          console.error(error);
+        }
+        return; // Hata varsa işlemi durdur
+      }
 
       const out = doc.getZip().generate({ type: "blob" });
       const url = URL.createObjectURL(out);
@@ -114,13 +127,14 @@
       link.style.display = "inline";
       link.textContent = "Belgeyi İndir";
 
+      // Önizleme
       const arrayBuffer = await out.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       document.getElementById('preview').innerHTML = result.value;
 
-    } catch (error) {
-      alert("Hata: " + error.message);
-      console.error(error);
+    } catch (fatalError) {
+      alert("Beklenmeyen hata: " + fatalError.message);
+      console.error(fatalError);
     }
   };
 </script>
