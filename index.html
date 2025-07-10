@@ -1,291 +1,131 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muğla Büyükşehir Belediyesi - Tutanak Düzenleyici</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.31.0/docxtemplater.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .form-section {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="number"], textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-        }
-        .checkbox-item input {
-            margin-right: 5px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .file-upload {
-            margin: 20px 0;
-        }
-    </style>
+<meta charset="UTF-8" />
+<title>Şablon Yükle & Belge Oluştur</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; max-width: 700px; }
+  label { display: block; margin-top: 10px; }
+  input[type="text"], input[type="date"], textarea { width: 100%; max-width: 400px; padding: 5px; }
+  textarea { height: 70px; }
+  #downloadLink { margin-top: 15px; display: inline-block; }
+  #preview { border: 1px solid #ccc; padding: 10px; margin-top: 20px; max-width: 700px; white-space: pre-wrap; }
+  .checkbox-group label { display: inline-block; width: 200px; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>MUĞLA BÜYÜKŞEHİR BELEDİYESİ<br>ULAŞIM DAİRESİ BAŞKANLIĞI TESPİT TUTANAĞI DÜZENLEYİCİ</h1>
 
-        <div class="file-upload">
-            <label for="templateFile">Word Şablonu Yükle:</label>
-            <input type="file" id="templateFile" accept=".docx">
-        </div>
+<h2>Şablon Dosyası Yükle ve Belge Oluştur</h2>
 
-        <form id="tutanakForm">
-            <div class="form-section">
-                <h2>Başvuru Bilgileri</h2>
-                <div class="checkbox-group">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="rutin_denetim" name="rutin_denetim">
-                        <label for="rutin_denetim">Rutin Denetim</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="sozlu_sikayet" name="sozlu_sikayet">
-                        <label for="sozlu_sikayet">Sözlü/Telefon Şikayeti</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="cagri_merkezi" name="cagri_merkezi">
-                        <label for="cagri_merkezi">Çağrı Merkezi</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="info" name="info">
-                        <label for="info">Info</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="cimer" name="cimer">
-                        <label for="cimer">CİMER</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="dilekce" name="dilekce">
-                        <label for="dilekce">Dilekçe</label>
-                    </div>
-                </div>
+<label>Şablon Dosyası (.docx): <input type="file" id="templateFile" accept=".docx" /></label>
 
-                <div class="form-group">
-                    <label for="kayit_no">Kayıt No:</label>
-                    <input type="text" id="kayit_no" name="kayit_no">
-                </div>
+<div class="checkbox-group">
+  <h3>Seçenekler (Checkbox)</h3>
+  <label><input type="checkbox" id="rutin_denetim" /> Rutin Denetim</label>
+  <label><input type="checkbox" id="sozlu_sikayet" /> Sözlü/Telefon Şikayet</label>
+  <label><input type="checkbox" id="cagri_merkezi" /> Çağrı Merkezi</label>
+  <label><input type="checkbox" id="info" /> İnfo</label>
+  <label><input type="checkbox" id="cimer" /> CİMER</label>
+  <label><input type="checkbox" id="dilekce" /> Dilekçe</label>
+</div>
 
-                <div class="form-group">
-                    <label for="sira_no">Sıra No:</label>
-                    <input type="text" id="sira_no" name="sira_no" value="2025-3-1">
-                </div>
+<h3>Metin Alanları</h3>
+<label>İş Emri ID: <input type="text" id="is_emri_id" /></label>
+<label>Info Sayı: <input type="text" id="info_sayi" /></label>
+<label>Dilekçe Tarih: <input type="date" id="dilekce_tarih" /></label>
+<label>Sahip Adı: <input type="text" id="sahip_adi" /></label>
+<label>Sahip TC: <input type="text" id="sahip_tc" /></label>
+<label>Sahip Tel: <input type="text" id="sahip_tel" /></label>
+<label>Sahip Doğum: <input type="date" id="sahip_dogum" /></label>
+<label>Plaka: <input type="text" id="plaka" /></label>
+<label>Kooperatif: <input type="text" id="kooperatif" /></label>
+<label>Hat No: <input type="text" id="hat_no" /></label>
+<label>Sahip Adres: <textarea id="sahip_adres"></textarea></label>
+<label>İçerik: <textarea id="icerik"></textarea></label>
 
-                <div class="form-group">
-                    <label for="is_emri_id">İş Emri ID:</label>
-                    <input type="text" id="is_emri_id" name="is_emri_id">
-                </div>
+<button id="generate" disabled style="margin-top:20px;">Belgeyi Oluştur</button>
+<a id="downloadLink" style="display:none;"></a>
 
-                <div class="form-group">
-                    <label for="info_sayi">Info Sayı:</label>
-                    <input type="text" id="info_sayi" name="info_sayi">
-                </div>
+<h3>Önizleme</h3>
+<div id="preview"></div>
 
-                <div class="form-group">
-                    <label for="cimer_sayi">CİMER Sayı:</label>
-                    <input type="text" id="cimer_sayi" name="cimer_sayi">
-                </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.1/pizzip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.28.1/build/docxtemplater.js"></script>
+<script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 
-                <div class="form-group">
-                    <label for="dilekce_tarih">Dilekçe Tarih-Sayı:</label>
-                    <input type="text" id="dilekce_tarih" name="dilekce_tarih">
-                </div>
-            </div>
+<script>
+  let loadedTemplateContent = null;
 
-            <div class="form-section">
-                <h2>Araç Sahibi Bilgileri</h2>
-                <div class="form-group">
-                    <label for="sahip_adi">Adı Soyadı:</label>
-                    <input type="text" id="sahip_adi" name="sahip_adi">
-                </div>
+  document.getElementById('templateFile').addEventListener('change', function(evt) {
+    const file = evt.target.files[0];
+    if (!file) {
+      alert("Lütfen bir .docx dosyası seçin.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      loadedTemplateContent = e.target.result;
+      alert("Şablon dosyası yüklendi. Artık belge oluşturabilirsiniz.");
+      document.getElementById('generate').disabled = false;
+    };
+    reader.readAsArrayBuffer(file);
+  });
 
-                <div class="form-group">
-                    <label for="sahip_tc">T.C. Kimlik No:</label>
-                    <input type="text" id="sahip_tc" name="sahip_tc">
-                </div>
+  document.getElementById('generate').onclick = async function() {
+    if (!loadedTemplateContent) {
+      alert("Önce şablon dosyasını yükleyin.");
+      return;
+    }
 
-                <div class="form-group">
-                    <label for="sahip_tel">Telefon No:</label>
-                    <input type="text" id="sahip_tel" name="sahip_tel">
-                </div>
+    try {
+      const zip = new PizZip(loadedTemplateContent);
+      const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
-                <div class="form-group">
-                    <label for="sahip_dogum">Doğum Yeri/Tarihi:</label>
-                    <input type="text" id="sahip_dogum" name="sahip_dogum">
-                </div>
+      // Checkboxlardan seçilenleri metin olarak ata, seçilmemişse boş
+      const data = {
+        rutin_denetim: document.getElementById('rutin_denetim').checked ? "Rutin Denetim Metni" : "",
+        sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? "Sözlü/Telefon Şikayet Metni" : "",
+        cagri_merkezi: document.getElementById('cagri_merkezi').checked ? "Çağrı Merkezi Metni" : "",
+        info: document.getElementById('info').checked ? "İnfo Metni" : "",
+        cimer: document.getElementById('cimer').checked ? "CİMER Metni" : "",
+        dilekce: document.getElementById('dilekce').checked ? "Dilekçe Metni" : "",
 
-                <div class="form-group">
-                    <label for="sahip_adres">Açık Adres:</label>
-                    <textarea id="sahip_adres" name="sahip_adres" rows="3"></textarea>
-                </div>
-            </div>
+        is_emri_id: document.getElementById('is_emri_id').value,
+        info_sayi: document.getElementById('info_sayi').value,
+        dilekce_tarih: document.getElementById('dilekce_tarih').value,
+        sahip_adi: document.getElementById('sahip_adi').value,
+        sahip_tc: document.getElementById('sahip_tc').value,
+        sahip_tel: document.getElementById('sahip_tel').value,
+        sahip_dogum: document.getElementById('sahip_dogum').value,
+        plaka: document.getElementById('plaka').value,
+        kooperatif: document.getElementById('kooperatif').value,
+        hat_no: document.getElementById('hat_no').value,
+        sahip_adres: document.getElementById('sahip_adres').value,
+        icerik: document.getElementById('icerik').value,
+      };
 
-            <div class="form-section">
-                <h2>Araç Bilgileri</h2>
-                <div class="form-group">
-                    <label for="plaka">Araç Plakası:</label>
-                    <input type="text" id="plaka" name="plaka">
-                </div>
+      doc.render(data);
 
-                <div class="form-group">
-                    <label for="kooperatif">Kooperatif Bilgileri:</label>
-                    <input type="text" id="kooperatif" name="kooperatif">
-                </div>
+      const out = doc.getZip().generate({ type: "blob" });
+      const url = URL.createObjectURL(out);
 
-                <div class="form-group">
-                    <label for="hat_no">Hat Numarası/Güzergah Adı:</label>
-                    <input type="text" id="hat_no" name="hat_no">
-                </div>
-            </div>
+      const link = document.getElementById('downloadLink');
+      link.href = url;
+      link.download = "output.docx";
+      link.style.display = "inline";
+      link.textContent = "Belgeyi İndir";
 
-            <div class="form-section">
-                <h2>İçerik</h2>
-                <div class="form-group">
-                    <label for="icerik">Tutanak İçeriği:</label>
-                    <textarea id="icerik" name="icerik" rows="6"></textarea>
-                </div>
-            </div>
+      // Mammoth ile önizleme
+      const arrayBuffer = await out.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      document.getElementById('preview').innerHTML = result.value;
 
-            <button type="button" onclick="generateDocument()">Belgeyi Oluştur ve İndir</button>
-        </form>
-    </div>
+    } catch (error) {
+      alert("Hata: " + error.message);
+      console.error(error);
+    }
+  };
+</script>
 
-    <script>
-        let templateFile = null;
-
-        // Word şablonunu yükle
-        document.getElementById('templateFile').addEventListener('change', function(e) {
-            templateFile = e.target.files[0];
-        });
-
-        function generateDocument() {
-            if (!templateFile) {
-                alert("Lütfen önce bir Word şablonu yükleyin.");
-                return;
-            }
-
-            // Form verilerini topla
-            const formData = {
-                rutin_denetim: document.getElementById('rutin_denetim').checked ? '✓' : '◻',
-                sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? '✓' : '◻',
-                cagri_merkezi: document.getElementById('cagri_merkezi').checked ? '✓' : '◻',
-                info: document.getElementById('info').checked ? '✓' : '◻',
-                cimer: document.getElementById('cimer').checked ? '✓' : '◻',
-                dilekce: document.getElementById('dilekce').checked ? '✓' : '◻',
-                kayit_no: document.getElementById('kayit_no').value || '',
-                sira_no: document.getElementById('sira_no').value || '2025-3-1',
-                is_emri_id: document.getElementById('is_emri_id').value || '',
-                info_sayi: document.getElementById('info_sayi').value || '',
-                cimer_sayi: document.getElementById('cimer_sayi').value || '',
-                dilekce_tarih: document.getElementById('dilekce_tarih').value || '',
-                sahip_adi: document.getElementById('sahip_adi').value || '',
-                sahip_tc: document.getElementById('sahip_tc').value || '',
-                sahip_tel: document.getElementById('sahip_tel').value || '',
-                sahip_dogum: document.getElementById('sahip_dogum').value || '',
-                sahip_adres: document.getElementById('sahip_adres').value || '',
-                plaka: document.getElementById('plaka').value || '',
-                kooperatif: document.getElementById('kooperatif').value || '',
-                hat_no: document.getElementById('hat_no').value || '',
-                icerik: document.getElementById('icerik').value || ''
-            };
-
-            // Word belgesini oluştur
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const content = e.target.result;
-                    const zip = new JSZip(content);
-                    const doc = new docxtemplater().loadZip(zip);
-
-                    // Değişkenleri ayarla (hata olsa bile devam et)
-                    doc.setData(formData);
-                    try {
-                        doc.render();
-                    } catch (error) {
-                        console.log("Şablonda değişken bulunamadı, ancak işleme devam ediliyor");
-                    }
-
-                    // İndirilebilir dosya oluştur
-                    const out = doc.getZip().generate({
-                        type: "blob",
-                        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    });
-
-                    saveAs(out, "tutanak_" + new Date().toISOString().slice(0, 10) + ".docx");
-                    alert("Belge başarıyla oluşturuldu ve indiriliyor...");
-                    
-                } catch (error) {
-                    console.error("Belge oluşturma hatası:", error);
-                    alert("Belge oluşturulurken bir hata oluştu: " + error.message);
-                }
-            };
-            reader.readAsArrayBuffer(templateFile);
-        }
-
-        // Örnek verilerle formu doldur (isteğe bağlı)
-        window.onload = function() {
-            document.getElementById('is_emri_id').value = "EMR2025001";
-            document.getElementById('info_sayi').value = "INF2025001";
-            document.getElementById('cimer_sayi').value = "CIM2025001";
-            document.getElementById('dilekce_tarih').value = "01.03.2025-123";
-            document.getElementById('sahip_adi').value = "Ahmet Yılmaz";
-            document.getElementById('plaka').value = "48 ABC 123";
-        };
-    </script>
 </body>
 </html>
