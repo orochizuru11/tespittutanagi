@@ -49,7 +49,7 @@
 <h3>Önizleme</h3>
 <div id="preview"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.1/pizzip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.1/dist/pizzip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.28.1/build/docxtemplater.js"></script>
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 
@@ -81,7 +81,6 @@
       const zip = new PizZip(loadedTemplateContent);
       const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
-      // Checkboxlardan seçilenleri metin olarak ata, seçilmemişse boş
       const data = {
         rutin_denetim: document.getElementById('rutin_denetim').checked ? "Rutin Denetim Metni" : "",
         sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? "Sözlü/Telefon Şikayet Metni" : "",
@@ -115,7 +114,6 @@
       link.style.display = "inline";
       link.textContent = "Belgeyi İndir";
 
-      // Mammoth ile önizleme
       const arrayBuffer = await out.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       document.getElementById('preview').innerHTML = result.value;
