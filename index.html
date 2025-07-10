@@ -75,20 +75,6 @@
         .file-upload {
             margin: 20px 0;
         }
-        .status-message {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 4px;
-            display: none;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
     </style>
 </head>
 <body>
@@ -217,8 +203,6 @@
 
             <button type="button" onclick="generateDocument()">Belgeyi Oluştur ve İndir</button>
         </form>
-
-        <div id="statusMessage" class="status-message"></div>
     </div>
 
     <script>
@@ -226,27 +210,12 @@
 
         // Word şablonunu yükle
         document.getElementById('templateFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                templateFile = file;
-                showStatus("Word şablonu başarıyla yüklendi.", "success");
-            }
+            templateFile = e.target.files[0];
         });
-
-        function showStatus(message, type) {
-            const statusElement = document.getElementById('statusMessage');
-            statusElement.textContent = message;
-            statusElement.className = `status-message ${type}`;
-            statusElement.style.display = 'block';
-            
-            setTimeout(() => {
-                statusElement.style.display = 'none';
-            }, 5000);
-        }
 
         function generateDocument() {
             if (!templateFile) {
-                showStatus("Lütfen önce bir Word şablonu yükleyin.", "error");
+                alert("Lütfen önce bir Word şablonu yükleyin.");
                 return;
             }
 
@@ -283,13 +252,12 @@
                     const zip = new JSZip(content);
                     const doc = new docxtemplater().loadZip(zip);
 
-                    // Değişkenleri ayarla
+                    // Değişkenleri ayarla (hata olsa bile devam et)
                     doc.setData(formData);
-                    
                     try {
                         doc.render();
                     } catch (error) {
-                        console.warn("Render hatası (devam ediliyor):", error);
+                        console.log("Şablonda değişken bulunamadı, ancak işleme devam ediliyor");
                     }
 
                     // İndirilebilir dosya oluştur
@@ -299,18 +267,24 @@
                     });
 
                     saveAs(out, "tutanak_" + new Date().toISOString().slice(0, 10) + ".docx");
-                    showStatus("Belge başarıyla oluşturuldu ve indiriliyor...", "success");
+                    alert("Belge başarıyla oluşturuldu ve indiriliyor...");
                     
                 } catch (error) {
                     console.error("Belge oluşturma hatası:", error);
-                    showStatus(`Hata: ${error.message}`, "error");
+                    alert("Belge oluşturulurken bir hata oluştu: " + error.message);
                 }
             };
-            reader.onerror = function(error) {
-                console.error("Dosya okuma hatası:", error);
-                showStatus("Dosya okunurken hata oluştu", "error");
-            };
             reader.readAsArrayBuffer(templateFile);
+        }
+
+        // Örnek verilerle formu doldur (isteğe bağlı)
+        window.onload = function() {
+            document.getElementById('is_emri_id').value = "EMR2025001";
+            document.getElementById('info_sayi').value = "INF2025001";
+            document.getElementById('cimer_sayi').value = "CIM2025001";
+            document.getElementById('dilekce_tarih').value = "01.03.2025-123";
+            document.getElementById('sahip_adi').value = "Ahmet Yılmaz";
+            document.getElementById('plaka').value = "48 ABC 123";
         };
     </script>
 </body>
