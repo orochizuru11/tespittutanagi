@@ -2,21 +2,20 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
-<title>Şablon Yükle & Hata Yakalama</title>
+<title>Şablonla Belge Oluşturucu</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; max-width: 700px; }
-  label { display: block; margin-top: 10px; }
-  input[type="text"], input[type="date"], textarea { width: 100%; max-width: 400px; padding: 5px; }
+  body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
+  label { display: block; margin: 8px 0 4px; }
+  input[type="text"], input[type="date"], textarea { width: 100%; max-width: 400px; padding: 6px; }
   textarea { height: 70px; }
+  .checkbox-group label { display: inline-block; width: 200px; }
   #downloadLink { margin-top: 15px; display: inline-block; }
   #preview { border: 1px solid #ccc; padding: 10px; margin-top: 20px; max-width: 700px; white-space: pre-wrap; }
-  .checkbox-group label { display: inline-block; width: 200px; }
 </style>
 </head>
 <body>
 
-<h2>Şablon Dosyası Yükle & Hata Yakala</h2>
-
+<h2>Şablon Dosyası Yükle & Formu Doldur</h2>
 <label>Şablon Dosyası (.docx): <input type="file" id="templateFile" accept=".docx" /></label>
 
 <div class="checkbox-group">
@@ -56,6 +55,7 @@
 <script>
   let loadedTemplateContent = null;
 
+  // Şablon dosyası seçildiğinde oku
   document.getElementById('templateFile').addEventListener('change', function(evt) {
     const file = evt.target.files[0];
     if (!file) {
@@ -65,18 +65,20 @@
     const reader = new FileReader();
     reader.onload = function(e) {
       loadedTemplateContent = e.target.result;
-      alert("Şablon dosyası yüklendi. Artık belge oluşturabilirsiniz.");
+      alert("Şablon dosyası yüklendi. Belge oluşturabilirsiniz.");
       document.getElementById('generate').disabled = false;
     };
     reader.readAsArrayBuffer(file);
   });
 
+  // Belge oluşturma butonuna tıklandığında
   document.getElementById('generate').onclick = async function() {
     if (!loadedTemplateContent) {
       alert("Önce şablon dosyasını yükleyin.");
       return;
     }
 
+    // Formdan verileri al
     const data = {
       rutin_denetim: document.getElementById('rutin_denetim').checked ? "Rutin Denetim Metni" : "",
       sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? "Sözlü/Telefon Şikayet Metni" : "",
@@ -102,25 +104,27 @@
     try {
       const zip = new PizZip(loadedTemplateContent);
       const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-      
-      // Detaylı hata yakalama burada
+
+      // Hataları detaylı yakala
       try {
         doc.render(data);
       } catch (error) {
         if (error.properties && error.properties.errors instanceof Array) {
-          const errors = error.properties.errors.map(e => e.properties.explanation).join("\n");
-          alert("Şablon işlenirken hata oluştu:\n" + errors);
+          const errors = error.properties.errors.map(e => e.properties.explanation).join("\n\n");
+          alert("Şablon işlenirken hata oluştu:\n\n" + errors);
           console.error("Docxtemplater hataları:\n", errors);
         } else {
           alert("Hata: " + error.message);
           console.error(error);
         }
-        return; // Hata varsa işlemi durdur
+        return;
       }
 
+      // Dosya oluştur
       const out = doc.getZip().generate({ type: "blob" });
       const url = URL.createObjectURL(out);
 
+      // İndir linkini göster
       const link = document.getElementById('downloadLink');
       link.href = url;
       link.download = "output.docx";
