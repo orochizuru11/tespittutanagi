@@ -1,100 +1,65 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Word Kaydet Testi (TinyMCE + Zip içinde docx)</title>
-
-  <!-- TinyMCE -->
-  <script src="https://cdn.tiny.cloud/1/pds3kn2z4g058iovio38007sirlqb4vjpxxgiul81ua5o8vv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-
-  <!-- DOCX kaydetme kütüphaneleri (jsDelivr) -->
-  <script src="https://cdn.jsdelivr.net/gh/evidenceprime/html-docx-js@master/dist/html-docx.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Evrak Oluşturucu</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.5/pizzip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.41.1/docxtemplater.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
   <style>
-    body {
-      background: #f0f0f0;
-      font-family: sans-serif;
-      padding: 2rem;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      width: 21cm;
-      min-height: 29.7cm;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    button {
-      display: block;
-      margin: 20px auto;
-      padding: 10px 20px;
-      font-weight: bold;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    textarea { width: 100%; height: 150px; margin-top: 10px; }
+    button { margin-top: 10px; padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
+  <h1>Evrak Oluşturucu</h1>
+  <p>Excel'den verileri şu formatta yapıştırın (başlık satırı olmalı):</p>
+  <pre>surucu_adi\tsurucu_tc\tplaka</pre>
+  <textarea id="excelData" placeholder="surucu_adi\tsurucu_tc\tplaka\nAli Veli\t12345678901\t48ABC123"></textarea>
+  <br>
+  <input type="file" id="templateUpload" accept=".docx">
+  <br>
+  <button onclick="generateDocs()">Belgeleri Oluştur</button>
 
-<button onclick="saveAsDocx()">💾 Word Olarak Kaydet ZIP İçinde (.docx)</button>
+  <script>
+    function generateDocs() {
+      const text = document.getElementById("excelData").value.trim();
+      const lines = text.split("\n");
+      const headers = lines[0].split("\t");
 
-<div class="container">
-  <textarea id="editor">
-    <h1>Merhaba!</h1>
-    <p>Bu içerik docx dosyasına kaydedilecek.</p>
-    <ul>
-      <li>Madde 1</li>
-      <li>Madde 2</li>
-    </ul>
-  </textarea>
-</div>
+      const rows = lines.slice(1).map(line => {
+        const values = line.split("\t");
+        const obj = {};
+        headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim());
+        return obj;
+      });
 
-<script>
-  tinymce.init({
-    selector: '#editor',
-    height: 800,
-    plugins: 'lists table image code',
-    toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | table | code',
-  });
+      const fileInput = document.getElementById("templateUpload");
+      if (!fileInput.files[0]) return alert("Lütfen bir .docx şablon yükleyin");
 
-  async function saveAsDocx() {
-    const content = tinymce.get("editor").getContent();
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const content = evt.target.result;
+        rows.forEach((data, idx) => {
+          const zip = new PizZip(content);
+          const doc = new window.docxtemplater().loadZip(zip);
+          doc.setData(data);
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head><meta charset="utf-8"></head>
-        <body>${content}</body>
-      </html>
-    `;
+          try {
+            doc.render();
+          } catch (error) {
+            console.error(error);
+            alert("Şablon doldurulurken hata oluştu: " + error.message);
+            return;
+          }
 
-    if(typeof window.htmlDocx === 'undefined') {
-      alert('html-docx-js kütüphanesi yüklenmedi!');
-      return;
+          const out = doc.getZip().generate({ type: "blob" });
+          saveAs(out, `belge_${idx + 1}.docx`);
+        });
+      };
+      reader.readAsBinaryString(fileInput.files[0]);
     }
-
-    try {
-      const docxBlob = window.htmlDocx.asBlob(html);
-
-      const zip = new JSZip();
-      zip.file('belge.docx', docxBlob);
-
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      saveAs(zipBlob, 'belge.zip');
-    } catch (e) {
-      alert('Dosya oluşturulurken hata oluştu. Konsolu kontrol edin.');
-      console.error(e);
-    }
-  }
-</script>
-
+  </script>
 </body>
 </html>
