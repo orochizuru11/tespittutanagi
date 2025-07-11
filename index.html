@@ -32,14 +32,14 @@
 <label>İş Emri ID: <input type="text" id="is_emri_id" /></label>
 <label>Info Sayı: <input type="text" id="info_sayi" /></label>
 <label>Dilekçe Tarih: <input type="date" id="dilekce_tarih" /></label>
-<label>Sahip Adı: <input type="text" id="sahip_adi" /></label>
-<label>Sahip TC: <input type="text" id="sahip_tc" /></label>
-<label>Sahip Tel: <input type="text" id="sahip_tel" /></label>
-<label>Sahip Doğum: <input type="date" id="sahip_dogum" /></label>
+<label>Adı: <input type="text" id="adi" /></label>
+<label>TC: <input type="text" id="tc" /></label>
+<label>Telefon: <input type="text" id="tel" /></label>
+<label>Doğum Tarihi: <input type="date" id="dogum" /></label>
 <label>Plaka: <input type="text" id="plaka" /></label>
 <label>Kooperatif: <input type="text" id="kooperatif" /></label>
 <label>Hat No: <input type="text" id="hat_no" /></label>
-<label>Sahip Adres: <textarea id="sahip_adres"></textarea></label>
+<label>Adres: <textarea id="adres"></textarea></label>
 <label>İçerik: <textarea id="icerik"></textarea></label>
 
 <button id="generate" disabled style="margin-top:20px;">Belgeyi Oluştur</button>
@@ -76,14 +76,12 @@
       return;
     }
 
-    // Tüm alanları kapsayan anahtar listesi
     const formKeys = [
       "rutin_denetim", "sozlu_sikayet", "cagri_merkezi", "info", "cimer", "dilekce",
-      "is_emri_id", "info_sayi", "dilekce_tarih", "sahip_adi", "sahip_tc", "sahip_tel",
-      "sahip_dogum", "plaka", "kooperatif", "hat_no", "sahip_adres", "icerik"
+      "is_emri_id", "info_sayi", "dilekce_tarih", "adi", "tc", "tel",
+      "dogum", "plaka", "kooperatif", "hat_no", "adres", "icerik"
     ];
 
-    // Otomatik tüm verileri toplayan sistem
     const data = {};
     formKeys.forEach(key => {
       const el = document.getElementById(key);
@@ -91,6 +89,8 @@
         data[key] = "";
       } else if (el.type === "checkbox") {
         data[key] = el.checked ? "✓" : "";
+      } else if (el.type === "date") {
+        data[key] = el.value || "";
       } else {
         data[key] = el.value || "";
       }
@@ -100,7 +100,6 @@
       const zip = new PizZip(loadedTemplateContent);
       const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
-      // Geliştirilmiş hata yakalama
       try {
         doc.render(data);
       } catch (error) {
