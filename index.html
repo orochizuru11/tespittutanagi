@@ -55,7 +55,6 @@
 <script>
   let loadedTemplateContent = null;
 
-  // Şablon dosyası seçildiğinde oku
   document.getElementById('templateFile').addEventListener('change', function(evt) {
     const file = evt.target.files[0];
     if (!file) {
@@ -71,67 +70,62 @@
     reader.readAsArrayBuffer(file);
   });
 
-  // Belge oluşturma butonuna tıklandığında
   document.getElementById('generate').onclick = async function() {
     if (!loadedTemplateContent) {
       alert("Önce şablon dosyasını yükleyin.");
       return;
     }
 
-    // Formdan verileri al
-    const data = {
-      rutin_denetim: document.getElementById('rutin_denetim').checked ? "Rutin Denetim Metni" : "",
-      sozlu_sikayet: document.getElementById('sozlu_sikayet').checked ? "Sözlü/Telefon Şikayet Metni" : "",
-      cagri_merkezi: document.getElementById('cagri_merkezi').checked ? "Çağrı Merkezi Metni" : "",
-      info: document.getElementById('info').checked ? "İnfo Metni" : "",
-      cimer: document.getElementById('cimer').checked ? "CİMER Metni" : "",
-      dilekce: document.getElementById('dilekce').checked ? "Dilekçe Metni" : "",
+    // Tüm alanları kapsayan anahtar listesi
+    const formKeys = [
+      "rutin_denetim", "sozlu_sikayet", "cagri_merkezi", "info", "cimer", "dilekce",
+      "is_emri_id", "info_sayi", "dilekce_tarih", "sahip_adi", "sahip_tc", "sahip_tel",
+      "sahip_dogum", "plaka", "kooperatif", "hat_no", "sahip_adres", "icerik"
+    ];
 
-      is_emri_id: document.getElementById('is_emri_id').value,
-      info_sayi: document.getElementById('info_sayi').value,
-      dilekce_tarih: document.getElementById('dilekce_tarih').value,
-      sahip_adi: document.getElementById('sahip_adi').value,
-      sahip_tc: document.getElementById('sahip_tc').value,
-      sahip_tel: document.getElementById('sahip_tel').value,
-      sahip_dogum: document.getElementById('sahip_dogum').value,
-      plaka: document.getElementById('plaka').value,
-      kooperatif: document.getElementById('kooperatif').value,
-      hat_no: document.getElementById('hat_no').value,
-      sahip_adres: document.getElementById('sahip_adres').value,
-      icerik: document.getElementById('icerik').value,
-    };
+    // Otomatik tüm verileri toplayan sistem
+    const data = {};
+    formKeys.forEach(key => {
+      const el = document.getElementById(key);
+      if (!el) {
+        data[key] = "";
+      } else if (el.type === "checkbox") {
+        data[key] = el.checked ? "✓" : "";
+      } else {
+        data[key] = el.value || "";
+      }
+    });
 
     try {
       const zip = new PizZip(loadedTemplateContent);
       const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
-      // Hataları detaylı yakala
+      // Geliştirilmiş hata yakalama
       try {
         doc.render(data);
       } catch (error) {
-        if (error.properties && error.properties.errors instanceof Array) {
-          const errors = error.properties.errors.map(e => e.properties.explanation).join("\n\n");
-          alert("Şablon işlenirken hata oluştu:\n\n" + errors);
-          console.error("Docxtemplater hataları:\n", errors);
+        if (error.properties && Array.isArray(error.properties.errors)) {
+          const explanations = error.properties.errors.map((e, i) => {
+            return `#${i + 1} → ${e.properties.explanation}`;
+          }).join("\n\n");
+          alert("Şablonda şu hatalar var:\n\n" + explanations);
+          console.error("Hata detayları:", error.properties.errors);
         } else {
-          alert("Hata: " + error.message);
+          alert("Genel Hata: " + error.message);
           console.error(error);
         }
         return;
       }
 
-      // Dosya oluştur
       const out = doc.getZip().generate({ type: "blob" });
       const url = URL.createObjectURL(out);
 
-      // İndir linkini göster
       const link = document.getElementById('downloadLink');
       link.href = url;
       link.download = "output.docx";
       link.style.display = "inline";
       link.textContent = "Belgeyi İndir";
 
-      // Önizleme
       const arrayBuffer = await out.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       document.getElementById('preview').innerHTML = result.value;
